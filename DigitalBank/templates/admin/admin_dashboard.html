@@ -1,0 +1,206 @@
+{% extends 'baseadmin.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block head %}
+<style>
+/* Dashboard Container */
+.dashboard-container {
+    padding: 2.5rem;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Welcome Section */
+.welcome-section {
+    background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+    color: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-section h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.welcome-section p {
+    opacity: 0.95;
+    font-size: 1.2rem;
+    letter-spacing: 0.3px;
+}
+
+/* Stats Grid */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.8rem;
+    margin-bottom: 2.5rem;
+}
+
+.stats-box {
+    background: white;
+    padding: 1.8rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.stats-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stats-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+}
+
+.stats-box.customers::before { background: #1976d2; }
+.stats-box.savings::before { background: #2e7d32; }
+.stats-box.current::before { background: #f9a825; }
+.stats-box.fixed::before { background: #c62828; }
+.stats-box.recurring::before { background: #6a1b9a; }
+
+.stats-box h3 {
+    font-size: 1.15rem;
+    color: #37474f;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.stats-box p {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #263238;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.stats-box .trend {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.trend.up { color: #2e7d32; }
+.trend.down { color: #c62828; }
+
+/* Add subtle animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.stats-box {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+.stats-box:nth-child(2) { animation-delay: 0.1s; }
+.stats-box:nth-child(3) { animation-delay: 0.2s; }
+.stats-box:nth-child(4) { animation-delay: 0.3s; }
+.stats-box:nth-child(5) { animation-delay: 0.4s; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1.5rem;
+    }
+    
+    .welcome-section {
+        padding: 2rem;
+    }
+    
+    .welcome-section h1 {
+        font-size: 1.8rem;
+    }
+    
+    .stats-box {
+        padding: 1.5rem;
+    }
+    
+    .stats-box p {
+        font-size: 1.8rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <h1>Welcome, Admin!</h1>
+        <p>Here's your overview for today</p>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-container">
+        <div class="stats-box customers">
+            <h3><i class="fas fa-users"></i> Total Customers</h3>
+            <p>{{ total_customers }}</p>
+            <div class="trend up">
+                <i class="fas fa-arrow-up"></i>
+                <span>12% increase</span>
+            </div>
+        </div>
+        
+        <div class="stats-box savings">
+            <h3><i class="fas fa-piggy-bank"></i> Savings Accounts</h3>
+            <p>{{ total_savings_accounts }}</p>
+            <div class="trend up">
+                <i class="fas fa-arrow-up"></i>
+                <span>8% increase</span>
+            </div>
+        </div>
+        
+        <div class="stats-box current">
+            <h3><i class="fas fa-wallet"></i> Current Accounts</h3>
+            <p>{{ total_current_accounts }}</p>
+            <div class="trend up">
+                <i class="fas fa-arrow-up"></i>
+                <span>5% increase</span>
+            </div>
+        </div>
+        
+        <div class="stats-box fixed">
+            <h3><i class="fas fa-lock"></i> Fixed Deposits</h3>
+            <p>{{ total_fixed_deposit }}</p>
+            <div class="trend up">
+                <i class="fas fa-arrow-up"></i>
+                <span>15% increase</span>
+            </div>
+        </div>
+        
+        <div class="stats-box recurring">
+            <h3><i class="fas fa-hand-holding-usd"></i> Total Loans</h3>
+            <p>{{ total_loans }}</p>
+            <div class="trend down">
+                <i class="fas fa-arrow-down"></i>
+                <span>3% decrease</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

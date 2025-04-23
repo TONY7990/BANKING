@@ -1,0 +1,139 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Classic Card Application Form</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="classicCardForm">
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information -->
+                        <div class="section mb-4">
+                            <h5 class="text-primary mb-3">Personal Information</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" name="full_name" value="{{ customer.customer_name }}" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" name="email" value="{{ customer.email }}" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Mobile Number</label>
+                                    <input type="tel" class="form-control" name="mobile" value="{{ customer.mobile_number }}" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" name="dob" value="{{ customer.date_of_birth|date:'Y-m-d' }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Information -->
+                        <div class="section mb-4">
+                            <h5 class="text-primary mb-3">Address Information</h5>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Address Line</label>
+                                    <input type="text" class="form-control" name="address" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">PIN Code</label>
+                                    <input type="text" class="form-control" name="pincode" maxlength="6" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">City</label>
+                                    <input type="text" class="form-control" name="city" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">State</label>
+                                    <input type="text" class="form-control" name="state" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mb-4">
+                            <div class="form-check" style="display: inline-flex; align-items: center;">
+                                <input class="form-check-input me-2" type="checkbox" id="terms" required style="margin-top: 0;">
+                                <label class="form-check-label" for="terms" style="white-space: nowrap;">
+                                    I agree to the terms and conditions and authorize the bank to verify my information
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">Submit Application</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('classicCardForm').addEventListener('submit', function(event) {
+    // Get form fields
+    const address = document.querySelector('input[name="address"]').value.trim();
+    const city = document.querySelector('input[name="city"]').value.trim();
+    const state = document.querySelector('input[name="state"]').value.trim();
+    const pincode = document.querySelector('input[name="pincode"]').value.trim();
+    const terms = document.getElementById('terms').checked;
+    
+    // Basic validation
+    if (!address || !city || !state || !pincode || !terms) {
+        event.preventDefault();
+        alert('Please fill in all required fields and accept the terms and conditions.');
+        return;
+    }
+    
+    if (pincode.length !== 6 || !/^\d+$/.test(pincode)) {
+        event.preventDefault();
+        alert('Please enter a valid 6-digit PIN code.');
+        return;
+    }
+});
+</script>
+
+<style>
+.section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.form-control:read-only {
+    background-color: #e9ecef;
+}
+
+.btn-primary {
+    padding: 10px 30px;
+    font-weight: 500;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.form-check-label {
+    color: #495057;
+    font-size: 0.95rem;
+}
+</style>
+{% endblock %}

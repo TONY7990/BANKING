@@ -1,0 +1,318 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+{% block title %} Send Money{% endblock %}
+{% block content %}
+
+<!-- Include Razorpay SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<div class="internet-banking-container">
+  <!-- Account Information Card -->
+  <div class="account-info-card">
+    <div class="balance-header">
+      <h2>Account Information</h2>
+      <div class="balance-amount">
+        <span class="currency">₹</span>
+        <span class="amount">{{ account_balance }}</span>
+      </div>
+      <p class="balance-label">Available Balance</p>
+    </div>
+  </div>
+
+  <!-- Transaction Form Card -->
+  <div class="transaction-card">
+    <h2>Net Banking Transfer</h2>
+    <form id="transactionForm">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="receiver_name">Receiver's Full Name</label>
+        <input type="text" id="receiver_name" name="receiver_name" required />
+      </div>
+      <div class="form-group">
+        <label for="receiver_account_number">Receiver's Account Number</label>
+        <input type="text" id="receiver_account_number" name="receiver_account_number" required />
+      </div>
+      <div class="form-group">
+        <label for="amount">Amount</label>
+        <input type="number" step="0.01" id="amount" name="amount" required />
+      </div>
+      <div class="form-group">
+        <label for="receiver_account_type">Receiver's Account Type</label>
+        <select id="receiver_account_type" name="receiver_account_type" required>
+          <option value="SAVINGS">Savings</option>
+          <option value="CURRENT">Current</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="ifsc_code">IFSC Code</label>
+        <input type="text" id="ifsc_code" name="ifsc_code" maxlength="11" required />
+      </div>
+      <div class="form-group">
+        <label for="purpose">Purpose of Transfer</label>
+        <textarea id="purpose" name="purpose" rows="3"></textarea>
+      </div>
+      <button type="button" class="submit-btn" onclick="openRazorpay()">
+        <span class="btn-text">Send Money</span>
+        <span class="btn-icon">→</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript for Razorpay Integration -->
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function saveTransaction(paymentId) {
+    const formData = new FormData();
+    formData.append('receiver_name', document.getElementById('receiver_name').value);
+    formData.append('receiver_account_number', document.getElementById('receiver_account_number').value);
+    formData.append('amount', document.getElementById('amount').value);
+    formData.append('receiver_account_type', document.getElementById('receiver_account_type').value);
+    formData.append('ifsc_code', document.getElementById('ifsc_code').value);
+    formData.append('purpose', document.getElementById('purpose').value);
+    formData.append('payment_id', paymentId);
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+    fetch("{% url 'internet_banking' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = `/payment-success/?payment_id=${paymentId}&amount=${document.getElementById('amount').value}&receiver_name=${document.getElementById('receiver_name').value}&receiver_account_number=${document.getElementById('receiver_account_number').value}`;
+        } else {
+            alert('Error saving transaction: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error saving transaction. Please try again.');
+    });
+}
+
+function openRazorpay() {
+    const amount = document.getElementById('amount').value;
+    const receiverName = document.getElementById('receiver_name').value;
+
+    var options = {
+        "key": "rzp_test_K3m91dIeZXVDcE",
+        "amount": amount * 100,
+        "currency": "INR",
+        "name": "NanoWealthBank",
+        "description": "Transaction with " + receiverName,
+        "handler": function (response) {
+            // Save transaction after successful payment
+            handlePaymentSuccess(response);
+        },
+        "prefill": {
+            "name": "{{ customer.name }}",
+            "email": "{{ customer.email }}"
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.open();
+}
+
+function handlePaymentSuccess(response) {
+    const formData = new FormData();
+    formData.append('receiver_name', document.getElementById('receiver_name').value);
+    formData.append('receiver_account_number', document.getElementById('receiver_account_number').value);
+    formData.append('amount', document.getElementById('amount').value);
+    formData.append('receiver_account_type', document.getElementById('receiver_account_type').value);
+    formData.append('ifsc_code', document.getElementById('ifsc_code').value);
+    formData.append('purpose', document.getElementById('purpose').value);
+    formData.append('payment_id', response.razorpay_payment_id);
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+    fetch("{% url 'internet_banking' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect to payment success page with transaction details
+            window.location.href = `/payment-success/?payment_id=${response.razorpay_payment_id}&amount=${document.getElementById('amount').value}&receiver_name=${document.getElementById('receiver_name').value}&receiver_account_number=${document.getElementById('receiver_account_number').value}`;
+        } else {
+            alert('Error saving transaction: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error saving transaction. Please try again.');
+    });
+}
+
+</script>
+
+<style>
+.internet-banking-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+.account-info-card, .transaction-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.account-info-card:hover, .transaction-card:hover {
+    transform: translateY(-5px);
+}
+
+.balance-header {
+    text-align: center;
+}
+
+.balance-header h2 {
+    color: #1a237e;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.balance-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2196f3;
+    margin: 1rem 0;
+}
+
+.balance-label {
+    color: #666;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.transaction-card h2 {
+    color: #1a237e;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #37474f;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #2196f3;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+    color: white;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 35, 126, 0.2);
+}
+
+.btn-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.submit-btn:hover .btn-icon {
+    transform: translateX(5px);
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .internet-banking-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .account-info-card {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .internet-banking-container {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+    
+    .account-info-card, .transaction-card {
+        padding: 1.5rem;
+    }
+    
+    .balance-amount {
+        font-size: 2rem;
+    }
+}
+</style>
+
+{% endblock %}
+  

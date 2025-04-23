@@ -1,0 +1,298 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper">
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Enter OTP</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }}">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
+                            <div class="alert alert-info text-center mb-4">
+                                <p class="mb-0">Please enter the OTP sent to:</p>
+                                <strong>{{ customer.email }}</strong>
+                            </div>
+
+                            <form method="POST" class="otp-form">
+                                {% csrf_token %}
+                                <div class="form-group text-center">
+                                    <label for="otp" class="d-block mb-3">Enter 6-digit OTP</label>
+                                    <div class="otp-input-group">
+                                        <input type="text" maxlength="1" class="otp-digit" data-index="1">
+                                        <input type="text" maxlength="1" class="otp-digit" data-index="2">
+                                        <input type="text" maxlength="1" class="otp-digit" data-index="3">
+                                        <input type="text" maxlength="1" class="otp-digit" data-index="4">
+                                        <input type="text" maxlength="1" class="otp-digit" data-index="5">
+                                        <input type="text" maxlength="1" class="otp-digit" data-index="6">
+                                    </div>
+                                    <input type="hidden" id="otp" name="otp" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block mt-4">
+                                    Verify OTP
+                                </button>
+                            </form>
+
+                            <div class="text-center mt-3">
+                                <a href="{% url 'activate_classiccard' %}" class="btn btn-link">
+                                    Back to Card Activation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpDigits = document.querySelectorAll('.otp-digit');
+    const otpInput = document.getElementById('otp');
+    const otpForm = document.querySelector('.otp-form');
+
+    otpForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get the OTP value
+        let otp = '';
+        otpDigits.forEach(d => otp += d.value);
+        
+        if(otp.length === 6) {
+            // Show success popup
+            Swal.fire({
+                title: 'Success!',
+                text: 'Your card has been successfully activated',
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#0f2847',
+                allowOutsideClick: false,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to card_details.html
+                    window.location.href = "{% url 'card_details' %}";
+                }
+            });
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Please enter a valid 6-digit OTP',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#0f2847'
+            });
+        }
+    });
+
+    otpDigits.forEach((digit, index) => {
+        digit.addEventListener('input', function(e) {
+            // Allow only numbers
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            if (this.value) {
+                // Move to next input
+                if (index < otpDigits.length - 1) {
+                    otpDigits[index + 1].focus();
+                }
+            }
+            
+            // Combine all digits
+            let otp = '';
+            otpDigits.forEach(d => otp += d.value);
+            otpInput.value = otp;
+        });
+
+        digit.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                // Move to previous input on backspace
+                otpDigits[index - 1].focus();
+            }
+        });
+    });
+});
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+<style>
+.content-wrapper {
+    background: linear-gradient(135deg, #f0f2f5 0%, #e5e7eb 100%);
+    min-height: calc(100vh - 60px);
+    padding: 20px;
+    margin-top: 60px;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background: #0f2847;
+    border-radius: 12px 12px 0 0;
+    padding: 15px 20px;
+    border: none;
+}
+
+.card-title {
+    color: white;
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+.card-body {
+    padding: 25px;
+}
+
+.alert {
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.alert-info {
+    background-color: #e8f4fd;
+    border-color: #bee5fb;
+    color: #0f2847;
+}
+
+.otp-form {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.otp-input-group {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.otp-digit {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 1.2rem;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.otp-digit:focus {
+    border-color: #0f2847;
+    box-shadow: 0 0 0 2px rgba(15, 40, 71, 0.2);
+    outline: none;
+}
+
+.btn {
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #0f2847;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #1a4169;
+    transform: translateY(-1px);
+}
+
+.btn-link {
+    color: #0f2847;
+    text-decoration: none;
+    padding: 8px 16px;
+}
+
+.btn-link:hover {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .col-md-4 {
+        padding: 0 15px;
+    }
+
+    .card {
+        margin: 10px 0;
+    }
+
+    .otp-digit {
+        width: 35px;
+        height: 35px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .otp-digit {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+
+    .otp-input-group {
+        gap: 6px;
+    }
+}
+
+.swal2-popup {
+    border-radius: 12px;
+    padding: 2em;
+}
+
+.swal2-title {
+    color: #0f2847;
+    font-size: 1.5em;
+}
+
+.swal2-html-container {
+    color: #666;
+}
+
+.swal2-confirm {
+    padding: 12px 30px !important;
+    font-size: 1rem !important;
+    border-radius: 8px !important;
+}
+
+.swal2-icon {
+    border-color: #0f2847;
+    color: #0f2847;
+}
+
+.swal2-success-circular-line-left,
+.swal2-success-circular-line-right,
+.swal2-success-fix {
+    background-color: white !important;
+}
+</style>
+{% endblock %}

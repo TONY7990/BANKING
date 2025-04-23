@@ -1,0 +1,626 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - NanoWealth Bank</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #232041;
+      --secondary-color: #4CAF50;
+      --error-color: #dc3545;
+      --success-color: #198754;
+      --border-radius: 8px;
+      --box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .navbar {
+      background-color: var(--primary-color);
+      padding: 1rem 2rem;
+      box-shadow: var(--box-shadow);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .navbar-brand img {
+      height: 40px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    .progress-bar-custom {
+      display: flex;
+      margin-bottom: 3rem;
+      position: relative;
+      justify-content: space-between;
+    }
+
+    .step {
+      flex: 1;
+      text-align: center;
+      padding: 1.5rem;
+      background: #f8f9fa;
+      position: relative;
+      border: none;
+      border-radius: var(--border-radius);
+      transition: all 0.3s ease;
+      margin: 0 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step i {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .step.active {
+      background: var(--secondary-color);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .step:not(:last-child):after {
+      content: '';
+      position: absolute;
+      right: -15px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 2px;
+      background: #dee2e6;
+      z-index: 1;
+    }
+
+    .step-content {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .step-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-label {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #495057;
+      font-size: 0.95rem;
+    }
+
+    .form-control, .form-select {
+      border-radius: var(--border-radius);
+      border: 1px solid #ced4da;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(35, 32, 65, 0.25);
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border-radius: var(--border-radius);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background-color: var(--secondary-color);
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #3d8b40;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      border: none;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+    }
+
+    .error-message {
+      color: var(--error-color);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+
+    .success-message {
+      color: var(--success-color);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .verification-container {
+      background: #f8f9fa;
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1.5rem;
+      border: 1px solid #dee2e6;
+    }
+
+    .verification-item {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-check {
+      padding: 1rem;
+      background: #fff;
+      border-radius: var(--border-radius);
+      border: 1px solid #dee2e6;
+      margin-top: 1.5rem;
+    }
+
+    .form-check-input {
+      margin-right: 0.75rem;
+    }
+
+    .form-check-label {
+      font-size: 0.95rem;
+      color: #495057;
+    }
+
+    .invalid-feedback {
+      display: none;
+      color: var(--error-color);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .was-validated .form-control:invalid,
+    .was-validated .form-select:invalid {
+      border-color: var(--error-color);
+    }
+
+    .was-validated .form-control:valid,
+    .was-validated .form-select:valid {
+      border-color: var(--success-color);
+    }
+
+    .spinner-border {
+      width: 1rem;
+      height: 1rem;
+      margin-right: 0.5rem;
+    }
+
+    .alert {
+      padding: 1rem 1.5rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .alert-info {
+      background-color: #cff4fc;
+      border-color: #b6effb;
+      color: #055160;
+    }
+
+    .alert i {
+      font-size: 1.25rem;
+    }
+
+    .input-group {
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+
+    .input-group .form-control {
+      border-radius: var(--border-radius) 0 0 var(--border-radius);
+    }
+
+    .input-group .btn {
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .form-text {
+      font-size: 0.875rem;
+      color: #6c757d;
+      margin-top: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 1rem;
+        padding: 1rem;
+      }
+
+      .step {
+        padding: 1rem;
+        margin: 0 0.25rem;
+      }
+
+      .step:not(:last-child):after {
+        width: 15px;
+        right: -8px;
+      }
+
+      .verification-container {
+        padding: 1rem;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <img src="{% static 'images/logo.png' %}" alt="NanoWealth Bank Logo">
+      <h1 class="text-white m-0">NanoWealth Bank</h1>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2 class="text-center mb-4">Create Your Account</h2>
+
+    <form id="signupForm" method="POST" action="{% url 'signup' %}" enctype="multipart/form-data" class="needs-validation" novalidate>
+      {% csrf_token %}
+      
+      <div class="progress-bar-custom">
+        <div class="step active" data-step="1">
+          <i class="fas fa-user-circle"></i>
+          <span>Personal Details</span>
+        </div>
+        <div class="step" data-step="2">
+          <i class="fas fa-envelope"></i>
+          <span>Contact Info</span>
+        </div>
+        <div class="step" data-step="3">
+          <i class="fas fa-shield-alt"></i>
+          <span>Verification</span>
+        </div>
+      </div>
+
+      <div class="step-content active" id="step-1">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          Please provide your personal information accurately.
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label" for="customername">Full Name</label>
+              <input type="text" class="form-control" id="customername" name="customername" required 
+                     pattern="^[A-Z][a-z]+(?: [A-Z][a-z]+)*$" placeholder="e.g., John Doe">
+              <div class="invalid-feedback">
+                Please enter your full name (First Last) with capital first letters.
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label" for="dob">Date of Birth</label>
+              <input type="date" class="form-control" id="dob" name="dob" required>
+              <div class="invalid-feedback">
+                Please select your date of birth.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label" for="mobilenum">Mobile Number</label>
+              <input type="text" class="form-control" id="mobilenum" name="mobilenum" 
+                     required pattern="^\+\d{1,3} \d{10}$" placeholder="+1 1234567890">
+              <div class="invalid-feedback">
+                Please enter a valid mobile number with country code.
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label" for="branch">Select Branch</label>
+              <select class="form-select" id="branch" name="branch" required>
+                <option value="">Choose a branch...</option>
+                {% for branch in branches %}
+                <option value="{{ branch.id }}">{{ branch.name }} - {{ branch.city }}</option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">
+                Please select a branch.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button type="button" class="btn btn-secondary" onclick="cancelSignup()">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="button" class="btn btn-primary" onclick="validateAndProceed(1)">
+            Next <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="step-content" id="step-2">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          We'll use these details to keep you informed about your account.
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address</label>
+              <input type="email" class="form-control" id="email" name="email" required>
+              <div class="invalid-feedback">
+                Please enter a valid email address.
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label" for="username">Username</label>
+              <input type="text" class="form-control" id="username" name="username" 
+                     required pattern="^[a-zA-Z0-9]+$" placeholder="Choose a username">
+              <div class="invalid-feedback">
+                Username must contain only letters and numbers.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="password" name="password" 
+                   required pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$">
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="form-text">Password must be at least 8 characters with letters and numbers.</div>
+          <div class="invalid-feedback">
+            Password must be at least 8 characters with letters and numbers.
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button type="button" class="btn btn-secondary" onclick="prevStep()">
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
+          <button type="button" class="btn btn-primary" onclick="validateAndProceed(2)">
+            Next <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="step-content" id="step-3">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          Please provide valid identification documents for verification.
+        </div>
+
+        <div class="verification-container">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="proof_of_verification">Identification Document Type</label>
+                <select class="form-select" id="proof_of_verification" name="proof_of_verification" required>
+                  <option value="">Select document type...</option>
+                  <option value="aadhar_card">Aadhar Card</option>
+                  <option value="pan_card">PAN Card</option>
+                  <option value="passport">Passport</option>
+                </select>
+                <div class="invalid-feedback">
+                  Please select a document type.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="document_number">Document Number</label>
+                <input type="text" class="form-control" id="document_number" name="document_number" required>
+                <div class="invalid-feedback">
+                  Please enter a valid document number.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="document_upload">Upload Document</label>
+            <input type="file" class="form-control" id="document_upload" name="document_upload" 
+                   accept="image/*" required>
+            <div class="form-text">Please upload a clear photo of your ID document.</div>
+            <div class="invalid-feedback">
+              Please upload a valid document image.
+            </div>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="physical_document_acknowledgment" 
+                   name="physical_document_acknowledgment" required>
+            <label class="form-check-label" for="physical_document_acknowledgment">
+              I confirm that I will submit physical copies of my documents to the bank
+            </label>
+            <div class="invalid-feedback">
+              You must agree to submit physical documents.
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button type="button" class="btn btn-secondary" onclick="prevStep()">
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-check"></i> Complete Registration
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentStep = 1;
+
+    function setMaxDate() {
+      const today = new Date();
+      const maxDate = today.toISOString().split('T')[0];
+      document.getElementById('dob').setAttribute('max', maxDate);
+    }
+
+    function validateAndProceed(step) {
+      const currentStepElement = document.getElementById('step-' + step);
+      const inputs = currentStepElement.querySelectorAll('input, select');
+      let isValid = true;
+
+      inputs.forEach(input => {
+        if (!input.checkValidity()) {
+          input.classList.add('is-invalid');
+          isValid = false;
+        } else {
+          input.classList.add('is-valid');
+          input.classList.remove('is-invalid');
+        }
+      });
+
+      if (isValid) {
+        nextStep();
+      }
+    }
+
+    function nextStep() {
+      if (currentStep < 3) {
+        document.getElementById('step-' + currentStep).classList.remove('active');
+        document.querySelector('.step[data-step="' + currentStep + '"]').classList.remove('active');
+        currentStep++;
+        document.getElementById('step-' + currentStep).classList.add('active');
+        document.querySelector('.step[data-step="' + currentStep + '"]').classList.add('active');
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        document.getElementById('step-' + currentStep).classList.remove('active');
+        document.querySelector('.step[data-step="' + currentStep + '"]').classList.remove('active');
+        currentStep--;
+        document.getElementById('step-' + currentStep).classList.add('active');
+        document.querySelector('.step[data-step="' + currentStep + '"]').classList.add('active');
+      }
+    }
+
+    function cancelSignup() {
+      if (confirm("Are you sure you want to cancel the registration process?")) {
+        window.location.href = "{% url 'home' %}";
+      }
+    }
+
+    function togglePassword() {
+      const passwordInput = document.getElementById('password');
+      const icon = document.querySelector('.fa-eye');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    // Real-time validation
+    document.querySelectorAll('input, select').forEach(input => {
+      input.addEventListener('input', function() {
+        if (this.checkValidity()) {
+          this.classList.add('is-valid');
+          this.classList.remove('is-invalid');
+        } else {
+          this.classList.add('is-invalid');
+          this.classList.remove('is-valid');
+        }
+      });
+    });
+
+    // Document number validation based on document type
+    document.getElementById('proof_of_verification').addEventListener('change', function() {
+      const docNumber = document.getElementById('document_number');
+      const docType = this.value;
+      
+      if (docType === 'aadhar_card') {
+        docNumber.pattern = '^[0-9]{12}$';
+        docNumber.placeholder = '12 digits Aadhar number';
+      } else if (docType === 'pan_card') {
+        docNumber.pattern = '^[A-Z]{5}[0-9]{4}[A-Z]$';
+        docNumber.placeholder = '10 character PAN number';
+      } else if (docType === 'passport') {
+        docNumber.pattern = '^[A-Z][0-9]{7}$';
+        docNumber.placeholder = '8 character Passport number';
+      }
+    });
+
+    // Form submission handling
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+      if (!this.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      this.classList.add('was-validated');
+    });
+
+    // Initialize
+    setMaxDate();
+  </script>
+</body>
+</html>
